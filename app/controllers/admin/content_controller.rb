@@ -44,8 +44,15 @@ class Admin::ContentController < Admin::BaseController
     @article1 = Article.find_by_id(params[:id])
     @article2 = Article.find_by_id(params[:merge_with])
 
+    if current_user.name != "admin" then
+      flash[:error] = _("Error, you are not allowed to perform this action")
+      return(redirect_to :action => 'index')
+    else
+      redirect_to admin_content_path, notice: "Merge ID not valid" and return unless @article1 and @article2 and @article1.id != @article2.id
+    end
+
 #todo either add check first for admin user OR at least redirect to a non-admin path!!!
-    redirect_to admin_content_path, notice: "Merge ID not valid" and return unless @article1 and @article2 and @article1.id != @article2.id
+#    redirect_to admin_content_path, notice: "Merge ID not valid" and return unless @article1 and @article2 and @article1.id != @article2.id
     
     Article.merge(@article1, @article2)
 #      if @article1.save then
