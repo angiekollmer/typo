@@ -71,6 +71,37 @@ class Article < Content
     end
   end
 
+  def self.merge(article1, article2)
+    # if both articles have no extended, just combine the bodies
+    if (article1.extended == "" &&
+         article2.extended == "") then
+	    new_body = article1.body
+	    new_body += "<p>\r\n</p>\r\n"
+            new_body += article2.body unless article2.body == nil
+	    article1.body = new_body
+   # otherwise if they both have extended, combine extended also
+    elsif (article1.extended != "" &&
+          article2.extended != "")
+      new_ext = article1.extended
+      new_ext += "<p>\r\n</p>\r\n"
+      new_ext += article2.extended
+      article1.extended = new_ext
+    # otherwise if only article2 has extended, copy that into article1
+    elsif (article1.extended == "" &&
+          article2.extended != "")
+      article1.extended = article2.extended
+    #nothing needed doing if only article1 has extended
+    end
+
+    # assign article2's comments to article1
+    article2.comments.each do |c|  
+      c.article_id = article1.id
+      c.save
+    end
+    article1.save
+    article2.delete
+  end
+
   def set_permalink
     return if self.state == 'draft'
     self.permalink = self.title.to_permalink if self.permalink.nil? or self.permalink.empty?

@@ -24,10 +24,12 @@ class Admin::ContentController < Admin::BaseController
   end
 
   def new
+  debugger
     new_or_edit
   end
 
   def edit
+ # debugger
     @article = Article.find(params[:id])
     unless @article.access_by? current_user
       redirect_to :action => 'index'
@@ -35,6 +37,22 @@ class Admin::ContentController < Admin::BaseController
       return
     end
     new_or_edit
+  end
+
+  def merge
+    debugger
+    @article1 = Article.find_by_id(params[:id])
+    @article2 = Article.find_by_id(params[:merge_with])
+
+#todo either add check first for admin user OR at least redirect to a non-admin path!!!
+    redirect_to admin_content_path, notice: "Merge ID not valid" and return unless @article1 and @article2 and @article1.id != @article2.id
+    
+    Article.merge(@article1, @article2)
+#      if @article1.save then
+         # @article2.destroy
+         set_the_flash
+         redirect_to :action => 'index'
+ #     end
   end
 
   def destroy
@@ -189,6 +207,8 @@ class Admin::ContentController < Admin::BaseController
       flash[:notice] = _('Article was successfully created')
     when 'edit'
       flash[:notice] = _('Article was successfully updated.')
+    when 'merge'
+      flash[:notice] = _('Article was successfully merged.')
     else
       raise "I don't know how to tidy up action: #{params[:action]}"
     end
